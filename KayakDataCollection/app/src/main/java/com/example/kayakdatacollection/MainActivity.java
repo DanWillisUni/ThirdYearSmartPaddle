@@ -9,15 +9,16 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.Spinner;
 
-public class MainActivity extends AppCompatActivity {
-
+public class MainActivity extends AppCompatActivity{
     private Accelerometer accelerometer;
     private Gyroscope gyroscope;
+    private boolean isInSession;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        isInSession = false;
 
         //setup dropdown
         Spinner dropdown = findViewById(R.id.activity_spinner);
@@ -26,18 +27,17 @@ public class MainActivity extends AppCompatActivity {
         dropdown.setAdapter(adapter);
 
         //setup button
-        final boolean[] isInSession = {false};
         final Button button = findViewById(R.id.button);
         button.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
-                if(isInSession[0]){
-                    isInSession[0] = false;
+                if(isInSession){
+                    isInSession = false;
                     button.setText("Start");
                     getWindow().getDecorView().setBackgroundColor(Color.WHITE);
                     onPause();
                 }
                 else{
-                    isInSession[0] = true;
+                    isInSession = true;
                     button.setText("Stop");
                     onResume();
                 }
@@ -50,22 +50,26 @@ public class MainActivity extends AppCompatActivity {
         accelerometer.setListener(new Accelerometer.Listener() {
             @Override
             public void onTranslation(float tx, float ty, float tz) {
-                if(tx > 1.0f){
-                    getWindow().getDecorView().setBackgroundColor(Color.RED);
-                }
-                else if(tx < -1.0f){
-                    getWindow().getDecorView().setBackgroundColor(Color.BLUE);
+                if(isInSession){
+                    if(tx > 1.0f){
+                        getWindow().getDecorView().setBackgroundColor(Color.RED);
+                    }
+                    else if(tx < -1.0f){
+                        getWindow().getDecorView().setBackgroundColor(Color.BLUE);
+                    }
                 }
             }
         });
         gyroscope.setListener(new Gyroscope.Listener() {
             @Override
             public void onRotation(float rx, float ry, float rz) {
-                if(ry > 1.0f){
-                    getWindow().getDecorView().setBackgroundColor(Color.GREEN);
-                }
-                else if(ry< -1.0f){
-                    getWindow().getDecorView().setBackgroundColor(Color.YELLOW);
+                if(isInSession){
+                    if(ry > 1.0f){
+                        getWindow().getDecorView().setBackgroundColor(Color.GREEN);
+                    }
+                    else if(ry< -1.0f){
+                        getWindow().getDecorView().setBackgroundColor(Color.YELLOW);
+                    }
                 }
             }
         });
