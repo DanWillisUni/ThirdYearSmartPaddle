@@ -8,17 +8,40 @@
 
     <Button
         android:id="@+id/button"
-        android:layout_width="159dp"
-        android:layout_height="49dp"
-        android:text="Start"
-        tools:layout_editor_absoluteX="126dp"
-        tools:layout_editor_absoluteY="648dp" />
+        android:layout_width="201dp"
+        android:layout_height="0dp"
+        android:layout_marginBottom="71dp"
+        android:text="button"
+        app:layout_constraintBottom_toTopOf="@+id/current_activity"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/activity_spinner" />
 
     <Spinner
         android:id="@+id/activity_spinner"
-        android:layout_width="369dp"
-        android:layout_height="35dp"
-        tools:layout_editor_absoluteX="21dp"
-        tools:layout_editor_absoluteY="182dp" />
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginStart="25dp"
+        android:layout_marginTop="148dp"
+        android:layout_marginEnd="25dp"
+        android:layout_marginBottom="79dp"
+        android:text="SELECT"
+        app:layout_constraintBottom_toTopOf="@+id/button"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/current_activity"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginStart="25dp"
+        android:layout_marginEnd="25dp"
+        android:layout_marginBottom="157dp"
+        android:text=""
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/button" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
