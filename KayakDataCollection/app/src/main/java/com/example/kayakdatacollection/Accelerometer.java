@@ -33,7 +33,7 @@ public class Accelerometer {
 
             @Override
             public void onAccuracyChanged(Sensor sensor, int i) {
-
+                //nothing to do here
             }
         };
     }
