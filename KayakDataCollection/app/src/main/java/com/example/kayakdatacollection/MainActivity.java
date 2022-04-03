@@ -1,8 +1,13 @@
 package com.example.kayakdatacollection;
 
-import androidx.appcompat.app.AppCompatActivity;
+import static android.os.Environment.getExternalStorageDirectory;
 
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.ContextCompat;
+
+import android.Manifest;
 import android.content.Context;
+import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.provider.ContactsContract;
@@ -32,6 +37,7 @@ public class MainActivity extends AppCompatActivity{
     private String currentSessionName = "";
     private String fileName = "";
     private File dir;
+    private String IMEI;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -40,11 +46,22 @@ public class MainActivity extends AppCompatActivity{
         isInSession = false;
         currentSessionName = "";
 
+        //device ID
+        /*TelephonyManager tm=(TelephonyManager)getSystemService(Context.TELEPHONY_SERVICE);
+        int readIMEI= ContextCompat.checkSelfPermission(this, Manifest.permission.READ_PHONE_STATE);
+        if(IMEI == null) {
+            if (readIMEI == PackageManager.PERMISSION_GRANTED) {
+                IMEI = android.provider.Settings.Secure.getString(this.getContentResolver(), android.provider.Settings.Secure.ANDROID_ID);
+            }
+        }*/
+
         //file setup
         fileName = "";
-        dir = new File(this.getFilesDir(),"KayakData");
+        dir = new File("storage/self/primary","KayakData");
+        System.out.println(dir.getPath());
         if(!dir.isDirectory()){
-            dir.mkdir();
+            dir.mkdirs();
+            System.out.println("Making new Dir");
         }
 
         //setup dropdown
@@ -82,11 +99,12 @@ public class MainActivity extends AppCompatActivity{
                 }
                 else{
                     button.setText("Stop");
-                    fileName = System.currentTimeMillis() + "_" + currentSessionName;
+                    fileName = MainActivity.this.IMEI + "_" + System.currentTimeMillis() + "_" + currentSessionName;
                     try {
-                        File accellFile = new File(fileName + "_accel.txt");
-                        accellFile.createNewFile();
-                        File gyroFile = new File(fileName + "_gyro.txt");
+                        File accelFile = new File(dir,fileName + "_accel.txt");
+                        System.out.println(accelFile.getAbsolutePath());
+                        accelFile.createNewFile();
+                        File gyroFile = new File(dir,fileName + "_gyro.txt");
                         gyroFile.createNewFile();
                     } catch (IOException e) {
                         e.printStackTrace();
@@ -144,7 +162,8 @@ public class MainActivity extends AppCompatActivity{
 
     private boolean writeToFile(String fileName, String content){
         try {
-            FileOutputStream fs = new FileOutputStream(new File(dir,fileName),true);
+            File f = new File(dir,fileName);
+            FileOutputStream fs = openFileOutput(f.getAbsolutePath(), MODE_APPEND);
             fs.write((content + "\r\n").getBytes());
             fs.close();
         } catch (IOException e) {
