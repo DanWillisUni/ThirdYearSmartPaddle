@@ -5,9 +5,13 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
 import android.Manifest;
+import android.annotation.SuppressLint;
+import android.content.Context;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.os.Environment;
+import android.telephony.TelephonyManager;
+import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -37,6 +41,7 @@ public class MainActivity extends AppCompatActivity{
     private long currentSessionStartTime;
 
     private static final int STORAGE_PERMISSION_CODE = 100;
+    private static final int STATE_PERMISSION_CODE = 101;
     private static final DecimalFormat df = new DecimalFormat("0.0000000000");
     private static final int IGNORE_TIME = 3000;
 
@@ -48,13 +53,7 @@ public class MainActivity extends AppCompatActivity{
         currentSessionName = "";
 
         //device ID
-        /*TelephonyManager tm=(TelephonyManager)getSystemService(Context.TELEPHONY_SERVICE);
-        int readIMEI= ContextCompat.checkSelfPermission(this, Manifest.permission.READ_PHONE_STATE);
-        if(IMEI == null) {
-            if (readIMEI == PackageManager.PERMISSION_GRANTED) {
-                IMEI = android.provider.Settings.Secure.getString(this.getContentResolver(), android.provider.Settings.Secure.ANDROID_ID);
-            }
-        }*/
+        IMEI = getUniqueIMEIId();
 
         //file setup
         checkPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE,STORAGE_PERMISSION_CODE);
@@ -159,7 +158,6 @@ public class MainActivity extends AppCompatActivity{
         accelerometer.register();
         gyroscope.register();
     }
-
     @Override
     protected void onPause() {
         super.onPause();
@@ -172,23 +170,45 @@ public class MainActivity extends AppCompatActivity{
         if (ContextCompat.checkSelfPermission(MainActivity.this, permission) == PackageManager.PERMISSION_DENIED) {
             ActivityCompat.requestPermissions(MainActivity.this, new String[] { permission }, requestCode);// Requesting the permission
         } else {
-            Toast.makeText(MainActivity.this, "Permission already granted", Toast.LENGTH_SHORT).show();
+            Toast.makeText(MainActivity.this, "Permission for " + permission + " already granted", Toast.LENGTH_SHORT).show();
         }
     }
 
     private boolean writeToFile(String filename, List<String> content){
         try {
-            File f = new File(writeDir,filename);
-            FileWriter writer = new FileWriter(f);
-            for (String line:content) {
-                writer.append(line + "\r\n");
+            if(!content.isEmpty()){
+                File f = new File(writeDir,filename);
+                FileWriter writer = new FileWriter(f);
+                for (String line:content) {
+                    writer.append(line + "\r\n");
+                }
+                writer.flush();
+                writer.close();
             }
-            writer.flush();
-            writer.close();
         } catch (IOException e) {
             e.printStackTrace();
             return false;
         }
         return true;
+    }
+
+    public String getUniqueIMEIId() {
+        try {
+            checkPermission(Manifest.permission.READ_PHONE_STATE,STATE_PERMISSION_CODE);
+            TelephonyManager telephonyManager = (TelephonyManager) this.getSystemService(Context.TELEPHONY_SERVICE);
+            if (ActivityCompat.checkSelfPermission(this, Manifest.permission.READ_PHONE_STATE) != PackageManager.PERMISSION_GRANTED) {
+                return "";
+            }
+            @SuppressLint("MissingPermission") String imei = telephonyManager.getDeviceId();
+            Log.e("imei", "=" + imei);
+            if (imei != null && !imei.isEmpty()) {
+                return imei;
+            } else {
+                return android.os.Build.SERIAL;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return "not_found";
     }
 }
