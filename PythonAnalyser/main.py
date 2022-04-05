@@ -1,16 +1,10 @@
-# This is a sample Python script.
+from Sensors import SensorIn
 
-# Press Shift+F10 to execute it or replace it with your code.
-# Press Double Shift to search everywhere for classes, files, tool windows, actions, and settings.
-
-
-def print_hi(name):
-    # Use a breakpoint in the code line below to debug your script.
-    print(f'Hi, {name}')  # Press Ctrl+F8 to toggle the breakpoint.
-
-
-# Press the green button in the gutter to run the script.
 if __name__ == '__main__':
-    print_hi('PyCharm')
-
-# See PyCharm help at https://www.jetbrains.com/help/pycharm/
+    test = SensorIn.Session("358240051111110_1649168173746")
+    print("Accel Values")
+    for a in test.accels:
+        print(str(a))
+    print("Gyro Values")
+    for g in test.gyros:
+        print(str(g))
