@@ -67,7 +67,7 @@ public class MainActivity extends AppCompatActivity{
 
         //setup dropdown
         Spinner dropdown = findViewById(R.id.activity_spinner);
-        String[] items = new String[]{"Excellent", "Good", "Bad"};
+        String[] items = new String[]{"Excellent", "OverReaching", "NotUpright","StrokeToShallow"};
         ArrayAdapter<String> dropdownList = new ArrayAdapter<>(this, android.R.layout.simple_spinner_dropdown_item, items);
         dropdown.setAdapter(dropdownList);
         dropdown.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
