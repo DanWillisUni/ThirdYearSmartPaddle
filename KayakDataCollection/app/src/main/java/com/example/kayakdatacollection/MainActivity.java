@@ -99,25 +99,9 @@ public class MainActivity extends AppCompatActivity{
                     button.setText("Start");
 
                     //post processing the files
-                    //TODO change to function
-                    List<String> accelToPublish = new ArrayList<String>();
-                    for (String line:currentAccel) {
-                        if(Long.parseLong(line.split(",")[0]) < stopTime- IGNORE_TIME && Long.parseLong(line.split(",")[0]) > currentSessionStartTime + IGNORE_TIME){
-                            accelToPublish.add(line);
-                        }
-                    }
-                    List<String> gyroToPublish = new ArrayList<String>();
-                    for (String line:currentGyro) {
-                        if(Long.parseLong(line.split(",")[0]) < stopTime- IGNORE_TIME && Long.parseLong(line.split(",")[0]) > currentSessionStartTime + IGNORE_TIME){
-                            gyroToPublish.add(line);
-                        }
-                    }
-                    List<String> rotaToPublish = new ArrayList<String>();
-                    for (String line:currentRota) {
-                        if(Long.parseLong(line.split(",")[0]) < stopTime- IGNORE_TIME && Long.parseLong(line.split(",")[0]) > currentSessionStartTime + IGNORE_TIME){
-                            rotaToPublish.add(line);
-                        }
-                    }
+                    List<String> accelToPublish = postProcessFile(currentAccel,stopTime);
+                    List<String> gyroToPublish = postProcessFile(currentGyro,stopTime);
+                    List<String> rotaToPublish = postProcessFile(currentRota,stopTime);
 
                     writeToFile(fileName + "_accel.txt",accelToPublish);
                     writeToFile(fileName + "_gyro.txt",gyroToPublish);
@@ -234,5 +218,15 @@ public class MainActivity extends AppCompatActivity{
             e.printStackTrace();
         }
         return "not_found";
+    }
+
+    public List<String> postProcessFile(List<String> input,long stopTime){
+        List<String> r = new ArrayList<String>();
+        for (String line:input) {
+            if(Long.parseLong(line.split(",")[0]) < stopTime- IGNORE_TIME && Long.parseLong(line.split(",")[0]) > currentSessionStartTime + IGNORE_TIME){
+                r.add(line);
+            }
+        }
+        return r;
     }
 }
