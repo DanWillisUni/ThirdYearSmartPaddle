@@ -30,6 +30,7 @@ import java.util.List;
 public class MainActivity extends AppCompatActivity{
     private Accelerometer accelerometer;
     private Gyroscope gyroscope;
+    private Rotation rotation;
     private boolean isInSession = false;
 
     private String currentSessionName = "";
@@ -38,6 +39,7 @@ public class MainActivity extends AppCompatActivity{
     private String IMEI;
     private List<String> currentAccel;
     private List<String> currentGyro;
+    private List<String> currentRota;
     private long currentSessionStartTime;
 
     private static final int STORAGE_PERMISSION_CODE = 100;
@@ -97,6 +99,7 @@ public class MainActivity extends AppCompatActivity{
                     button.setText("Start");
 
                     //post processing the files
+                    //TODO change to function
                     List<String> accelToPublish = new ArrayList<String>();
                     for (String line:currentAccel) {
                         if(Long.parseLong(line.split(",")[0]) < stopTime- IGNORE_TIME && Long.parseLong(line.split(",")[0]) > currentSessionStartTime + IGNORE_TIME){
@@ -109,8 +112,16 @@ public class MainActivity extends AppCompatActivity{
                             gyroToPublish.add(line);
                         }
                     }
+                    List<String> rotaToPublish = new ArrayList<String>();
+                    for (String line:currentRota) {
+                        if(Long.parseLong(line.split(",")[0]) < stopTime- IGNORE_TIME && Long.parseLong(line.split(",")[0]) > currentSessionStartTime + IGNORE_TIME){
+                            rotaToPublish.add(line);
+                        }
+                    }
+
                     writeToFile(fileName + "_accel.txt",accelToPublish);
                     writeToFile(fileName + "_gyro.txt",gyroToPublish);
+                    writeToFile(fileName + "_rota.txt",rotaToPublish);
                     fileName = "";
                 }
                 else{
@@ -121,6 +132,7 @@ public class MainActivity extends AppCompatActivity{
                     //checkPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE,STORAGE_PERMISSION_CODE);
                     currentAccel = new ArrayList<String>();
                     currentGyro = new ArrayList<String>();
+                    currentRota = new ArrayList<String>();
                     t.setText(fileName);
                     isInSession = true;
                     onResume();
@@ -131,6 +143,7 @@ public class MainActivity extends AppCompatActivity{
         //setup sensors
         accelerometer = new Accelerometer(this);
         gyroscope = new Gyroscope(this);
+        rotation = new Rotation(this);
         accelerometer.setListener(new Accelerometer.Listener() {
             @Override
             public void onTranslation(float tx, float ty, float tz) {
@@ -149,6 +162,15 @@ public class MainActivity extends AppCompatActivity{
                 }
             }
         });
+        rotation.setListener(new Rotation.Listener() {
+            @Override
+            public void onRotation(float rx, float ry, float rz,float v3,float v4) {
+                if(isInSession && fileName != ""){
+                    String line = System.currentTimeMillis() + "," + df.format(rx) + "," + df.format(ry) + "," + df.format(rz)+ "," + df.format(v3)+ "," + df.format(v4);
+                    currentRota.add(line);
+                }
+            }
+        });
     }
 
     @Override
@@ -157,6 +179,7 @@ public class MainActivity extends AppCompatActivity{
 
         accelerometer.register();
         gyroscope.register();
+        rotation.register();
     }
     @Override
     protected void onPause() {
@@ -164,6 +187,7 @@ public class MainActivity extends AppCompatActivity{
 
         accelerometer.unregister();
         gyroscope.unregister();
+        rotation.unregister();
     }
 
     public void checkPermission(String permission, int requestCode)  {
