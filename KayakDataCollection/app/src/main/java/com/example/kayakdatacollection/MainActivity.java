@@ -8,6 +8,7 @@ import android.Manifest;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.pm.PackageManager;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Environment;
 import android.telephony.TelephonyManager;
@@ -45,7 +46,7 @@ public class MainActivity extends AppCompatActivity{
     private static final int STORAGE_PERMISSION_CODE = 100;
     private static final int STATE_PERMISSION_CODE = 101;
     private static final DecimalFormat df = new DecimalFormat("0.0000000000");
-    private static final int IGNORE_TIME = 3000;
+    private static final int IGNORE_TIME = 5000;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -69,7 +70,7 @@ public class MainActivity extends AppCompatActivity{
 
         //setup dropdown
         Spinner dropdown = findViewById(R.id.activity_spinner);
-        String[] items = new String[]{"Excellent", "OverReaching", "NotUpright","StrokeToShallow"};
+        String[] items = new String[]{"Perfect", "Over-Reaching", "Not-Upright","Stroke-To-Shallow","Stroke-To-Wide","Blade-Angle-Wrong","Test"};
         ArrayAdapter<String> dropdownList = new ArrayAdapter<>(this, android.R.layout.simple_spinner_dropdown_item, items);
         dropdown.setAdapter(dropdownList);
         dropdown.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
@@ -77,18 +78,16 @@ public class MainActivity extends AppCompatActivity{
             public void onItemSelected(AdapterView<?> parentView, View selectedItemView, int position, long id) {
                 currentSessionName = dropdownList.getItem(position);
             }
-
             @Override
             public void onNothingSelected(AdapterView<?> parentView) {
                 currentSessionName = "";
             }
-
         });
 
         //setup button
         final Button button = findViewById(R.id.button);
         button.setText("Start");
-        final TextView t = findViewById(R.id.current_activity);
+        button.setBackgroundColor(Color.GREEN);
         button.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
                 if(isInSession){
@@ -97,27 +96,29 @@ public class MainActivity extends AppCompatActivity{
                     isInSession = false;
                     System.out.println("Stop: " + System.currentTimeMillis());
                     button.setText("Start");
-
+                    button.setBackgroundColor(Color.GREEN);
                     //post processing the files
                     List<String> accelToPublish = postProcessFile(currentAccel,stopTime);
                     List<String> gyroToPublish = postProcessFile(currentGyro,stopTime);
                     List<String> rotaToPublish = postProcessFile(currentRota,stopTime);
 
-                    writeToFile(fileName + "_accel.txt",accelToPublish);
-                    writeToFile(fileName + "_gyro.txt",gyroToPublish);
-                    writeToFile(fileName + "_rota.txt",rotaToPublish);
+                    writeToFile(currentSessionName,fileName + "_accel.txt",accelToPublish);
+                    writeToFile(currentSessionName,fileName + "_gyro.txt",gyroToPublish);
+                    writeToFile(currentSessionName,fileName + "_rota.txt",rotaToPublish);
                     fileName = "";
                 }
                 else{
                     currentSessionStartTime = System.currentTimeMillis();
                     System.out.println("Start: " + currentSessionStartTime);
                     button.setText("Stop");
-                    fileName = MainActivity.this.IMEI + "_" + currentSessionStartTime + "_" + currentSessionName;
+                    button.setBackgroundColor(Color.RED);
+                    final TextView textBox = findViewById(R.id.editTextTextPersonName);
+                    fileName = MainActivity.this.IMEI + "_" + currentSessionStartTime + "_" + textBox.getText();
                     //checkPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE,STORAGE_PERMISSION_CODE);
                     currentAccel = new ArrayList<String>();
                     currentGyro = new ArrayList<String>();
                     currentRota = new ArrayList<String>();
-                    t.setText(fileName);
+                    Toast.makeText(MainActivity.this, fileName, Toast.LENGTH_SHORT).show();
                     isInSession = true;
                     onResume();
                 }
@@ -182,10 +183,14 @@ public class MainActivity extends AppCompatActivity{
         }
     }
 
-    private boolean writeToFile(String filename, List<String> content){
+    private boolean writeToFile(String dir,String filename, List<String> content){
         try {
             if(!content.isEmpty()){
-                File f = new File(writeDir,filename);
+                File d = new File(writeDir,dir);
+                if (!d.exists()){
+                    d.mkdirs();
+                }
+                File f = new File(d,filename);
                 FileWriter writer = new FileWriter(f);
                 for (String line:content) {
                     writer.append(line + "\r\n");
