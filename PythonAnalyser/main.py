@@ -1,10 +1,8 @@
+import Utilities
+import AppSettings as set
 from Sensors import SensorIn
 
 if __name__ == '__main__':
-    test = SensorIn.Session("358240051111110_1649168173746")
-    print("Accel Values")
-    for a in test.accels:
-        print(str(a))
-    print("Gyro Values")
-    for g in test.gyros:
-        print(str(g))
+    l = Utilities.get_filenames(set.get_new_data_dir())
+    for x in range(len(l)):
+        print(l[x])
