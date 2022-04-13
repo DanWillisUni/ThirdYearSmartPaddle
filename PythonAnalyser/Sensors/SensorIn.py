@@ -1,42 +1,4 @@
-import AppSettings as _set
-
-
-class GyroIn:
-    def __init__(self, line):
-        split_line = line.split(",")
-        self.timestamp = int(split_line[0])
-        self.rx = float(split_line[1])
-        self.ry = float(split_line[2])
-        self.rz = float(split_line[3])
-
-    def __str__(self):
-        return str(self.timestamp) + "," + str(self.rx) + "," + str(self.ry) + "," + str(self.rz)
-
-
-class AccelIn:
-    def __init__(self, line):
-        split_line = line.split(",")
-        self.timestamp = int(split_line[0])
-        self.tx = float(split_line[1])
-        self.ty = float(split_line[2])
-        self.tz = float(split_line[3])
-
-    def __str__(self):
-        return str(self.timestamp) + "," + str(self.tx) + "," + str(self.ty) + "," + str(self.tz)
-
-
-class RotaIn:
-    def __init__(self, line):
-        split_line = line.split(",")
-        self.timestamp = int(split_line[0])
-        self.rx = float(split_line[1])
-        self.ry = float(split_line[2])
-        self.rz = float(split_line[3])
-        self.v3 = float(split_line[4])
-        self.v4 = float(split_line[5])
-
-    def __str__(self):
-        return str(self.timestamp) + "," + str(self.rx) + "," + str(self.ry) + "," + str(self.rz) + "," + str(self.v3) + "," + str(self.v4)
+import numpy as np
 
 
 class Session:
@@ -47,24 +9,39 @@ class Session:
         self.accel_filename = file_prefix + "_accel.txt"
         self.gyro_filename = file_prefix + "_gyro.txt"
         self.rota_filename = file_prefix + "_rota.txt"
-        self.accels = list()
-        self.gyros = list()
-        self.rotas = list()
         self.set_list_from_file()
-        self.accels = sorted(self.accels, key=lambda x: x.timestamp)
-        self.gyros = sorted(self.gyros, key=lambda x: x.timestamp)
-        self.rotas = sorted(self.rotas, key=lambda x: x.timestamp)
+        self.accels = self.accels[self.accels[:,1].argsort(kind='mergesort')]
+        self.gyros = self.gyros[self.gyros[:,1].argsort(kind='mergesort')]
+        self.rotas = self.rotas[self.rotas[:,1].argsort(kind='mergesort')]
+
+    @staticmethod
+    def get_list_from_file(line):
+        line = line.replace("\n","")
+        ls = line.split(",")
+
+        r = np.empty([len(ls)])
+        for i in range(len(ls)):
+            if i == 0:
+                r[i] = np.longlong(ls[i])
+            else:
+                r[i] = float(ls[i])
+        return r
 
     def set_list_from_file(self):
-        accel_file = open(_set.get_new_data_dir() + self.accel_filename, 'r')
+        accel_file = open(self.accel_filename, 'r')
         accel_lines = accel_file.readlines()
-        for line in accel_lines:
-            self.accels.append(AccelIn(line))
-        gyro_file = open(_set.get_new_data_dir() + self.gyro_filename, 'r')
+        self.accels = np.empty([len(accel_lines), 4])
+        for i in range(len(accel_lines)):
+            self.accels[i] = self.get_list_from_file(accel_lines[i])
+
+        gyro_file = open(self.gyro_filename, 'r')
         gyro_lines = gyro_file.readlines()
-        for line in gyro_lines:
-            self.gyros.append(GyroIn(line))
-        rota_file = open(_set.get_new_data_dir() + self.rota_filename, 'r')
+        self.gyros = np.empty([len(gyro_lines), 4])
+        for i in range(len(gyro_lines)):
+            self.gyros[i] = self.get_list_from_file(gyro_lines[i])
+
+        rota_file = open(self.rota_filename, 'r')
         rota_lines = rota_file.readlines()
-        for line in rota_lines:
-            self.rota.append(GyroIn(line))
+        self.rotas = np.empty([len(rota_lines), 6])
+        for i in range(len(rota_lines)):
+            self.rotas[i] = self.get_list_from_file(rota_lines[i])
