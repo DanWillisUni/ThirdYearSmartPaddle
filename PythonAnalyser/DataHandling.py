@@ -11,10 +11,9 @@ paddle_types = {
 	"Perfect":0,
 	"Over-Reaching":1,
 	"Not-Upright":2,
-	"Stroke-To-Shallow":3,
-	"Stroke-To-Wide":4,
-	"Blade-Angle-Wrong":5,
-	"Test":6
+	#"Stroke-To-Shallow":3,
+	"Stroke-To-Wide":3,
+	"Blade-Angle-Wrong":4
 }
 
 
@@ -22,7 +21,7 @@ def feature_extraction(session):
 	features = None
 	labels = None
 
-	segment_size = 6  # The window size for feature extraction
+	segment_size = 10  # The window size for feature extraction
 	for i in range(0, len(session.accels) - segment_size, int(segment_size / 2)):
 		accel_seg = session.accels[i:i + segment_size, :]
 		accel_vals = np.delete(accel_seg, 0, 1)
@@ -102,7 +101,7 @@ def five_fold_cross_validation(features, labels):
 	plt.savefig(AppSettings.get_image_dir() + "Confusion_Matrix.png")
 	print("Save Confusion Matrix")
 	plt.close()
-	return confusion_matrix
+	return confusion_matrix, clf
 
 
 def plot_confusion_matrix(confusion_matrix, classes, normalize=False, title='Confusion Matrix', cmap=plt.cm.Blues):
