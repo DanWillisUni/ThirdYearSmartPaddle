@@ -1,16 +1,17 @@
-# This is a sample Python script.
+import model as m
+import Utilities
+from Sensors import SensorIn as si
+import DataHandling as dh
+import AppSettings
 
-# Press Shift+F10 to execute it or replace it with your code.
-# Press Double Shift to search everywhere for classes, files, tool windows, actions, and settings.
+import os
+import numpy as np
 
-
-def print_hi(name):
-    # Use a breakpoint in the code line below to debug your script.
-    print(f'Hi, {name}')  # Press Ctrl+F8 to toggle the breakpoint.
-
-
-# Press the green button in the gutter to run the script.
 if __name__ == '__main__':
-    print_hi('PyCharm')
-
-# See PyCharm help at https://www.jetbrains.com/help/pycharm/
+    clf = m.get_model()
+    print("=====Test Data=====")
+    filename_list = Utilities.get_filenames(AppSettings.get_new_data_dir())
+    for filename in filename_list:
+        session = si.Session(filename)
+        current_features, current_labels = dh.feature_extraction(session)
+        print(filename + " " + str(m.classify(clf,current_features)))
