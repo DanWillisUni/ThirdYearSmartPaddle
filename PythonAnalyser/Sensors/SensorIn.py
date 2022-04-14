@@ -1,10 +1,12 @@
 import numpy as np
 
+import AppSettings
+
 
 class Session:
     def __init__(self, file_prefix):
         file_prefix_split = file_prefix.split("_")
-        self.IMEI = file_prefix_split[0]
+        self.IMEI = file_prefix_split[0].split("/")[-1]
         self.start_time = file_prefix_split[1]
         self.accel_filename = file_prefix + "_accel.txt"
         self.gyro_filename = file_prefix + "_gyro.txt"
@@ -13,6 +15,7 @@ class Session:
         self.accels = self.accels[self.accels[:,1].argsort(kind='mergesort')]
         self.gyros = self.gyros[self.gyros[:,1].argsort(kind='mergesort')]
         self.rotas = self.rotas[self.rotas[:,1].argsort(kind='mergesort')]
+        self.label = file_prefix_split[0].replace(AppSettings.get_model_data_dir(),"").replace(AppSettings.get_new_data_dir(),"").split("\\")[0]
 
     @staticmethod
     def get_list_from_file(line):
