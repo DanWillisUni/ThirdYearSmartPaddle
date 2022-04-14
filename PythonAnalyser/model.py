@@ -10,7 +10,7 @@ import numpy as np
 def get_model():
 	features = None
 	labels = None
-	dir_names = ["Perfect", "Over-Reaching", "Not-Upright", "Stroke-To-Wide", "Blade-Angle-Wrong"]
+	dir_names = AppSettings.get_dirs()
 	for dir_name in dir_names:
 		filename_list = Utilities.get_filenames(os.path.join(AppSettings.get_model_data_dir(), dir_name))
 		for filename in filename_list:
@@ -25,7 +25,7 @@ def get_model():
 				labels = np.array(current_labels)
 			else:
 				labels = np.append(labels, current_labels, axis=0)
-	features = features.reshape([-1, 6])
+	features = features.reshape([-1, 8])
 	labels = labels.reshape([-1, 1])
 	confusion_matrix, clf = dh.five_fold_cross_validation(features, labels)
 
@@ -35,6 +35,15 @@ def get_model():
 	print("Accuracy: " + str(calculate_accuracy(confusion_matrix)))
 
 	return clf
+
+
+def classify(clf,features):
+	label_count = [0] * 5
+	predicted_label = clf.predict(features)
+	predicted_labels = predicted_label.flatten().tolist()
+	for predicted_label in predicted_labels:
+		label_count[AppSettings.paddle_types[predicted_label]] += 1
+	return label_count
 
 
 def calculate_precision(confusion_matrix, index=-1):

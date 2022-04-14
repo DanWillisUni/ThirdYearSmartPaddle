@@ -4,17 +4,9 @@ from sklearn.model_selection import cross_val_score, train_test_split, Stratifie
 from sklearn.ensemble import AdaBoostClassifier
 from sklearn.tree import DecisionTreeClassifier
 import itertools
+from sklearn.feature_selection import RFE
 
 import AppSettings
-
-paddle_types = {
-	"Perfect":0,
-	"Over-Reaching":1,
-	"Not-Upright":2,
-	#"Stroke-To-Shallow":3,
-	"Stroke-To-Wide":3,
-	"Blade-Angle-Wrong":4
-}
 
 
 def feature_extraction(session):
@@ -37,10 +29,19 @@ def feature_extraction(session):
 		rota_vals = np.delete(rota_seg, 0, 1)
 		rota_vals = np.delete(rota_vals, 3, 1)
 		rota_vals = np.delete(rota_vals, 3, 1)
-		rota_mean = np.mean(rota_vals)
-		rota_var = np.var(rota_vals)
 
-		feature = [accel_mean, accel_var, gyro_mean, gyro_var, rota_mean, rota_var]
+		#np.array(map(rota_vals, math.s))
+
+		rota_xy_vals = np.delete(rota_vals,2,1)
+		rota_xy_mean = np.mean(rota_xy_vals)
+		rota_xy_var = np.var(rota_xy_vals)
+
+		rota_z_vals = np.delete(rota_vals, 0, 1)
+		rota_z_vals = np.delete(rota_z_vals, 0, 1)
+		rota_z_mean = np.mean(rota_z_vals)
+		rota_z_var = np.var(rota_z_vals)
+
+		feature = [accel_mean, accel_var, gyro_mean, gyro_var, rota_xy_mean, rota_xy_var,rota_z_mean,rota_z_var]
 		if features is None:
 			features = np.array([feature])
 		else:
@@ -92,15 +93,20 @@ def five_fold_cross_validation(features, labels):
 
 		predicted_labels += predicted_label.flatten().tolist()
 		true_labels += Y_test.flatten().tolist()
-	confusion_matrix = np.zeros((len(paddle_types), len(paddle_types)))
+	confusion_matrix = np.zeros((len(AppSettings.paddle_types), len(AppSettings.paddle_types)))
 
 	for i in range(len(true_labels)):
-		confusion_matrix[paddle_types[true_labels[i]], paddle_types[predicted_labels[i]]] += 1
+		confusion_matrix[AppSettings.paddle_types[true_labels[i]], AppSettings.paddle_types[predicted_labels[i]]] += 1
 
-	plot_confusion_matrix(confusion_matrix, paddle_types.keys(), normalize=False)
+	plot_confusion_matrix(confusion_matrix, AppSettings.paddle_types.keys(), normalize=False)
 	plt.savefig(AppSettings.get_image_dir() + "Confusion_Matrix.png")
 	print("Save Confusion Matrix")
 	plt.close()
+
+	selector = RFE(clf, n_features_to_select=1)
+	selector.fit(X_train, Y_train)
+	print(selector.ranking_)
+
 	return confusion_matrix, clf
 
 

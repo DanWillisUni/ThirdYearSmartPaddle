@@ -1,5 +1,0 @@
-This is where all the data will go to be analysed
-
-We will copy and paste data collected from the SmartPaddle app in here
-
-Data used by the models will also be in here but a different folder
