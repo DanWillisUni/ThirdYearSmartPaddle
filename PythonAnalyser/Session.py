@@ -12,9 +12,9 @@ class Session:
         self.gyro_filename = file_prefix + "_gyro.txt"
         self.rota_filename = file_prefix + "_rota.txt"
         self.set_list_from_file()
-        self.accels = self.accels[self.accels[:,1].argsort(kind='mergesort')]
-        self.gyros = self.gyros[self.gyros[:,1].argsort(kind='mergesort')]
-        self.rotas = self.rotas[self.rotas[:,1].argsort(kind='mergesort')]
+        self.accels = self.accels[self.accels[:,0].argsort(kind='mergesort')]
+        self.gyros = self.gyros[self.gyros[:,0].argsort(kind='mergesort')]
+        self.rotas = self.rotas[self.rotas[:,0].argsort(kind='mergesort')]
         self.label = file_prefix_split[0].replace(AppSettings.get_model_data_dir(),"").replace(AppSettings.get_new_data_dir(),"").split("\\")[0]
         self.name = file_prefix_split[-1]
 

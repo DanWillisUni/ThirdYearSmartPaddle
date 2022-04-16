@@ -1,7 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
-from sklearn.model_selection import cross_val_score, train_test_split, StratifiedKFold
-from sklearn.ensemble import AdaBoostClassifier
+from sklearn.model_selection import StratifiedKFold
 from sklearn.tree import DecisionTreeClassifier
 import itertools
 from sklearn.feature_selection import RFE
@@ -13,7 +12,7 @@ def feature_extraction(session):
 	features = None
 	labels = None
 
-	segment_size = 10  # The window size for feature extraction
+	segment_size = 16  # The window size for feature extraction
 	for i in range(0, len(session.accels) - segment_size, int(segment_size / 2)):
 		accel_seg = session.accels[i:i + segment_size, :]
 		accel_vals = np.delete(accel_seg, 0, 1)
@@ -29,8 +28,6 @@ def feature_extraction(session):
 		rota_vals = np.delete(rota_seg, 0, 1)
 		rota_vals = np.delete(rota_vals, 3, 1)
 		rota_vals = np.delete(rota_vals, 3, 1)
-
-		#np.array(map(rota_vals, math.s))
 
 		rota_xy_vals = np.delete(rota_vals,2,1)
 		rota_xy_mean = np.mean(rota_xy_vals)
