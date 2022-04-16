@@ -1,6 +1,6 @@
 import Utilities
 import AppSettings
-from Sensors import SensorIn as si
+import Session as si
 import DataHandling as dh
 
 import os
@@ -98,3 +98,12 @@ def calculate_accuracy(confusion_matrix):
     #print("True: " + str(t))
     #print("False: " + str(f))
     return t / (t + f)
+
+def classify_readable(label_count):
+	total = label_count[0]
+	indexOfHighest = 1
+	for i in range(1,len(label_count)):
+		total += label_count[i]
+		if label_count[i]>label_count[indexOfHighest]:
+			indexOfHighest = i
+	return "Perfect " + str(100*((float)(label_count[0]/total))) + "%, to improve " + AppSettings.get_dirs()[indexOfHighest] + " " + str(label_count)

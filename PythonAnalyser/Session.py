@@ -16,6 +16,7 @@ class Session:
         self.gyros = self.gyros[self.gyros[:,1].argsort(kind='mergesort')]
         self.rotas = self.rotas[self.rotas[:,1].argsort(kind='mergesort')]
         self.label = file_prefix_split[0].replace(AppSettings.get_model_data_dir(),"").replace(AppSettings.get_new_data_dir(),"").split("\\")[0]
+        self.name = file_prefix_split[-1]
 
     @staticmethod
     def get_list_from_file(line):
