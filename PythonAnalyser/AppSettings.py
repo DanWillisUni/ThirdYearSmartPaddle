@@ -3,10 +3,11 @@ paddle_types = {
 	"Perfect":0,
 	"Over-Reaching":1,
 	"Not-Upright":2,
-	#"Stroke-To-Shallow":3,
-	"Stroke-To-Wide":3,
+	#"Stroke-Too-Shallow":3,
+	"Stroke-Too-Wide":3,
 	"Blade-Angle-Wrong":4
 }
+
 
 def get_new_data_dir():
 	return "res/DATA/AppData/"
@@ -21,4 +22,4 @@ def get_image_dir():
 
 
 def get_dirs():
-	return ["Perfect", "Over-Reaching", "Not-Upright", "Stroke-To-Wide", "Blade-Angle-Wrong"]
+	return ["Perfect", "Over-Reaching", "Not-Upright", "Stroke-Too-Wide", "Blade-Angle-Wrong"]
