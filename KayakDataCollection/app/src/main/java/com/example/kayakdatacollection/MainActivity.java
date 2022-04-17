@@ -7,6 +7,7 @@ import androidx.core.content.ContextCompat;
 import android.Manifest;
 import android.annotation.SuppressLint;
 import android.content.Context;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.os.Bundle;
@@ -17,6 +18,7 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -70,7 +72,7 @@ public class MainActivity extends AppCompatActivity{
 
         //setup dropdown
         Spinner dropdown = findViewById(R.id.activity_spinner);
-        String[] items = new String[]{"Perfect", "Over-Reaching", "Not-Upright","Stroke-To-Shallow","Stroke-To-Wide","Blade-Angle-Wrong","Test"};
+        String[] items = new String[]{"Perfect", "Too-Close-Hands","Over-Reaching", "Not-Upright","Stroke-Too-Wide","Blade-Angle-Wrong","Test"};
         ArrayAdapter<String> dropdownList = new ArrayAdapter<>(this, android.R.layout.simple_spinner_dropdown_item, items);
         dropdown.setAdapter(dropdownList);
         dropdown.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
@@ -85,8 +87,8 @@ public class MainActivity extends AppCompatActivity{
         });
 
         //setup button
-        final Button button = findViewById(R.id.button);
-        button.setText("Start");
+        final ImageButton button = findViewById(R.id.StopStartButton);
+        button.setImageResource(R.drawable.ic_baseline_play_arrow_24);
         button.setBackgroundColor(Color.GREEN);
         button.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
@@ -95,7 +97,7 @@ public class MainActivity extends AppCompatActivity{
                     onPause();
                     isInSession = false;
                     System.out.println("Stop: " + System.currentTimeMillis());
-                    button.setText("Start");
+                    button.setImageResource(R.drawable.ic_baseline_play_arrow_24);
                     button.setBackgroundColor(Color.GREEN);
                     //post processing the files
                     List<String> accelToPublish = postProcessFile(currentAccel,stopTime);
@@ -110,7 +112,7 @@ public class MainActivity extends AppCompatActivity{
                 else{
                     currentSessionStartTime = System.currentTimeMillis();
                     System.out.println("Start: " + currentSessionStartTime);
-                    button.setText("Stop");
+                    button.setImageResource(R.drawable.ic_baseline_stop_24);
                     button.setBackgroundColor(Color.RED);
                     final TextView textBox = findViewById(R.id.editTextTextPersonName);
                     fileName = MainActivity.this.IMEI + "_" + currentSessionStartTime + "_" + textBox.getText();
@@ -154,6 +156,16 @@ public class MainActivity extends AppCompatActivity{
                     String line = System.currentTimeMillis() + "," + df.format(rx) + "," + df.format(ry) + "," + df.format(rz)+ "," + df.format(v3)+ "," + df.format(v4);
                     currentRota.add(line);
                 }
+            }
+        });
+
+        ImageButton imageButton = (ImageButton) findViewById(R.id.ToInfoButton);
+        //Assign a listener to your button
+        imageButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(MainActivity.this, DisplayFeedback.class);
+                startActivity(intent);
             }
         });
     }
