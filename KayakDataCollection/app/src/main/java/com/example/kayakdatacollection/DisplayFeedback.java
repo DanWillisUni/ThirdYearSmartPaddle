@@ -10,6 +10,8 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -29,12 +31,12 @@ public class DisplayFeedback extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.display_feedback);
-
         Intent intent = getIntent();
 
         double perfectPercent = calculatePerfectPercent();
-        String imageToDisplay = getImageName(perfectPercent);
-
+        int imageToDisplay = getImageName(perfectPercent);
+        ImageView rank = (ImageView) findViewById(R.id.rankImage);
+        rank.setImageResource(imageToDisplay);
 
     }
 
@@ -46,8 +48,8 @@ public class DisplayFeedback extends AppCompatActivity {
         return (double)(feedbackArray[0]/total);
     }
 
-    private String getImageName(double perfectPercent){
-        if(perfectPercent < 20){
+    private int getImageName(double perfectPercent){
+        /*if(perfectPercent < 20){
 
         } else if(perfectPercent < 40){
 
@@ -55,7 +57,7 @@ public class DisplayFeedback extends AppCompatActivity {
 
         } else if(perfectPercent < 80){
 
-        }
-        return "Shark";
+        }*/
+        return R.drawable.shark;
     }
 }
