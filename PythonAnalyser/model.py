@@ -13,20 +13,27 @@ def get_model():
 	dir_names = AppSettings.get_dirs()
 	for dir_name in dir_names:
 		filename_list = Utilities.get_filenames(os.path.join(AppSettings.get_model_data_dir(), dir_name))
+		dir_features = None
 		for filename in filename_list:
 			session = si.Session(filename)
 			current_features, current_labels = dh.feature_extraction(session)
-			if features is None:
-				features = np.array(current_features)
+			if dir_features is None:
+				dir_features = np.array(current_features)
 			else:
-				features = np.append(features, [current_features])
+				dir_features = np.append(dir_features, current_features,axis=0)
 
 			if labels is None:
 				labels = np.array(current_labels)
 			else:
 				labels = np.append(labels, current_labels, axis=0)
-	features = features.reshape([-1, 12])
-	labels = labels.reshape([-1, 1])
+		for i in range(0, np.size(dir_features, axis=1)):  # for each feature
+			dh.plot_extracted_features(dir_features, dir_name + "/", i)  # plot feature
+		if features is None:
+			features = np.array(dir_features)
+		else:
+			features = np.append(features, dir_features,axis=0)
+
+	labels = labels.reshape([-1])
 	confusion_matrix, clf = dh.five_fold_cross_validation(features, labels)
 
 	for i in range(0,len(dir_names)):

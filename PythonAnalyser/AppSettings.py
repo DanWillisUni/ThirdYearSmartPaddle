@@ -26,4 +26,4 @@ def get_dirs():
 
 
 def get_window_size():
-	return 16
+	return 32
