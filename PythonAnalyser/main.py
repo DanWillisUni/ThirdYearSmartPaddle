@@ -4,6 +4,8 @@ import Session as si
 import DataHandling as dh
 import AppSettings
 
+import numpy as np
+
 if __name__ == '__main__':
     clf = m.get_model()
     print("=====Test Data=====")
@@ -17,10 +19,15 @@ if __name__ == '__main__':
             names.append(session.name)
 
     for name in names:
-        label_count = [0]*len(AppSettings.get_dirs())
+        features = None
         for session in sessions:
             if session.name == name:
                 current_features, current_labels = dh.feature_extraction(session)
-                current_label_count = m.classify(clf, current_features)
-                label_count = [x + y for x, y in zip(label_count, current_label_count)]
+                if features is None:
+                    features = np.array(current_features)
+                else:
+                    features = np.append(features, current_features, axis=0)
+        for i in range(0,np.size(features,axis=1)):
+            dh.plot_extracted_features(features,name + "/Feature",i)
+        label_count = m.classify(clf, features)
         print(name + " " + str(m.classify_readable(label_count)))

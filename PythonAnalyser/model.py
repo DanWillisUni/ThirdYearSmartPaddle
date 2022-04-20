@@ -25,7 +25,7 @@ def get_model():
 				labels = np.array(current_labels)
 			else:
 				labels = np.append(labels, current_labels, axis=0)
-	features = features.reshape([-1, 8])
+	features = features.reshape([-1, 12])
 	labels = labels.reshape([-1, 1])
 	confusion_matrix, clf = dh.five_fold_cross_validation(features, labels)
 
@@ -106,4 +106,4 @@ def classify_readable(label_count):
 		total += label_count[i]
 		if label_count[i]>label_count[indexOfHighest]:
 			indexOfHighest = i
-	return "Perfect " + str(100*((float)(label_count[0]/total))) + "%, to improve " + AppSettings.get_dirs()[indexOfHighest] + " " + str(label_count)
+	return "Perfect " + str(round(100*((float)(label_count[0]/total)),2)) + "%, to improve " + AppSettings.get_dirs()[indexOfHighest] + " " + str(round(100* label_count[indexOfHighest]/total,2)) +"% " + str(label_count)
