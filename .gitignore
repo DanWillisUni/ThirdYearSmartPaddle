@@ -1,0 +1,11 @@
+#For Python
+*.idea
+*/__pycache__/
+/PythonAnalyser/res/Images
+
+#For Report
+*.aux
+*.bbl
+*.blg
+*.gz
+.ipynb*

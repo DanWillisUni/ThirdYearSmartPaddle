@@ -23,3 +23,7 @@ def get_image_dir():
 
 def get_dirs():
 	return ["Perfect", "Over-Reaching", "Not-Upright", "Stroke-Too-Wide", "Blade-Angle-Wrong"]
+
+
+def get_window_size():
+	return 32
