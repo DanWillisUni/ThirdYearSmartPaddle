@@ -172,6 +172,8 @@ def plot_confusion_matrix(confusion_matrix, classes, normalize=False, title='Con
 	else:
 		print('Confusion matrix, without normalization')
 
+	#cmp = np.array(confusion_matrix)
+	#print(repr(cmp))
 	print(confusion_matrix)
 
 	plt.imshow(confusion_matrix, interpolation='nearest', cmap=cmap)  # plot with colour map
