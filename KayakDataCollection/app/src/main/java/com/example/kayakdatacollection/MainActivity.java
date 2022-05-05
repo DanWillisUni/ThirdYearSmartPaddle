@@ -7,9 +7,7 @@ import androidx.core.content.ContextCompat;
 import android.Manifest;
 import android.annotation.SuppressLint;
 import android.content.Context;
-import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Environment;
 import android.telephony.TelephonyManager;
@@ -18,7 +16,6 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
-import android.widget.ImageButton;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -33,7 +30,6 @@ import java.util.List;
 public class MainActivity extends AppCompatActivity{
     private Accelerometer accelerometer;
     private Gyroscope gyroscope;
-    private Rotation rotation;
     private boolean isInSession = false;
 
     private String currentSessionName = "";
@@ -42,13 +38,12 @@ public class MainActivity extends AppCompatActivity{
     private String IMEI;
     private List<String> currentAccel;
     private List<String> currentGyro;
-    private List<String> currentRota;
     private long currentSessionStartTime;
 
     private static final int STORAGE_PERMISSION_CODE = 100;
     private static final int STATE_PERMISSION_CODE = 101;
     private static final DecimalFormat df = new DecimalFormat("0.0000000000");
-    private static final int IGNORE_TIME = 5000;
+    private static final int IGNORE_TIME = 3000;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -72,7 +67,7 @@ public class MainActivity extends AppCompatActivity{
 
         //setup dropdown
         Spinner dropdown = findViewById(R.id.activity_spinner);
-        String[] items = new String[]{"Perfect", "Too-Close-Hands","Over-Reaching", "Not-Upright","Stroke-Too-Wide","Blade-Angle-Wrong","Test"};
+        String[] items = new String[]{"Perfect", "Over-Reaching", "Not-Upright", "Stroke-Too-Wide", "Blade-Angle-Wrong","Test"};
         ArrayAdapter<String> dropdownList = new ArrayAdapter<>(this, android.R.layout.simple_spinner_dropdown_item, items);
         dropdown.setAdapter(dropdownList);
         dropdown.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
@@ -80,16 +75,18 @@ public class MainActivity extends AppCompatActivity{
             public void onItemSelected(AdapterView<?> parentView, View selectedItemView, int position, long id) {
                 currentSessionName = dropdownList.getItem(position);
             }
+
             @Override
             public void onNothingSelected(AdapterView<?> parentView) {
                 currentSessionName = "";
             }
+
         });
 
         //setup button
-        final ImageButton button = findViewById(R.id.StopStartButton);
-        button.setImageResource(R.drawable.ic_baseline_play_arrow_24);
-        button.setBackgroundColor(Color.GREEN);
+        final Button button = findViewById(R.id.button);
+        button.setText("Start");
+        final TextView t = findViewById(R.id.current_activity);
         button.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
                 if(isInSession){
@@ -97,30 +94,34 @@ public class MainActivity extends AppCompatActivity{
                     onPause();
                     isInSession = false;
                     System.out.println("Stop: " + System.currentTimeMillis());
-                    button.setImageResource(R.drawable.ic_baseline_play_arrow_24);
-                    button.setBackgroundColor(Color.GREEN);
-                    //post processing the files
-                    List<String> accelToPublish = postProcessFile(currentAccel,stopTime);
-                    List<String> gyroToPublish = postProcessFile(currentGyro,stopTime);
-                    List<String> rotaToPublish = postProcessFile(currentRota,stopTime);
+                    button.setText("Start");
 
-                    writeToFile(currentSessionName,fileName + "_accel.txt",accelToPublish);
-                    writeToFile(currentSessionName,fileName + "_gyro.txt",gyroToPublish);
-                    writeToFile(currentSessionName,fileName + "_rota.txt",rotaToPublish);
+                    //post processing the files
+                    List<String> accelToPublish = new ArrayList<String>();
+                    for (String line:currentAccel) {
+                        if(Long.parseLong(line.split(",")[0]) < stopTime- IGNORE_TIME && Long.parseLong(line.split(",")[0]) > currentSessionStartTime + IGNORE_TIME){
+                            accelToPublish.add(line);
+                        }
+                    }
+                    List<String> gyroToPublish = new ArrayList<String>();
+                    for (String line:currentGyro) {
+                        if(Long.parseLong(line.split(",")[0]) < stopTime- IGNORE_TIME && Long.parseLong(line.split(",")[0]) > currentSessionStartTime + IGNORE_TIME){
+                            gyroToPublish.add(line);
+                        }
+                    }
+                    writeToFile(fileName + "_accel.txt",accelToPublish);
+                    writeToFile(fileName + "_gyro.txt",gyroToPublish);
                     fileName = "";
                 }
                 else{
                     currentSessionStartTime = System.currentTimeMillis();
                     System.out.println("Start: " + currentSessionStartTime);
-                    button.setImageResource(R.drawable.ic_baseline_stop_24);
-                    button.setBackgroundColor(Color.RED);
-                    final TextView textBox = findViewById(R.id.editTextTextPersonName);
-                    fileName = MainActivity.this.IMEI + "_" + currentSessionStartTime + "_" + textBox.getText();
+                    button.setText("Stop");
+                    fileName = MainActivity.this.IMEI + "_" + currentSessionStartTime + "_" + currentSessionName;
                     //checkPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE,STORAGE_PERMISSION_CODE);
                     currentAccel = new ArrayList<String>();
                     currentGyro = new ArrayList<String>();
-                    currentRota = new ArrayList<String>();
-                    Toast.makeText(MainActivity.this, fileName, Toast.LENGTH_SHORT).show();
+                    t.setText(fileName);
                     isInSession = true;
                     onResume();
                 }
@@ -130,7 +131,6 @@ public class MainActivity extends AppCompatActivity{
         //setup sensors
         accelerometer = new Accelerometer(this);
         gyroscope = new Gyroscope(this);
-        rotation = new Rotation(this);
         accelerometer.setListener(new Accelerometer.Listener() {
             @Override
             public void onTranslation(float tx, float ty, float tz) {
@@ -149,25 +149,6 @@ public class MainActivity extends AppCompatActivity{
                 }
             }
         });
-        rotation.setListener(new Rotation.Listener() {
-            @Override
-            public void onRotation(float rx, float ry, float rz,float v3,float v4) {
-                if(isInSession && fileName != ""){
-                    String line = System.currentTimeMillis() + "," + df.format(rx) + "," + df.format(ry) + "," + df.format(rz)+ "," + df.format(v3)+ "," + df.format(v4);
-                    currentRota.add(line);
-                }
-            }
-        });
-
-        ImageButton imageButton = (ImageButton) findViewById(R.id.ToInfoButton);
-        //Assign a listener to your button
-        imageButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent intent = new Intent(MainActivity.this, DisplayFeedback.class);
-                startActivity(intent);
-            }
-        });
     }
 
     @Override
@@ -176,7 +157,6 @@ public class MainActivity extends AppCompatActivity{
 
         accelerometer.register();
         gyroscope.register();
-        rotation.register();
     }
     @Override
     protected void onPause() {
@@ -184,7 +164,6 @@ public class MainActivity extends AppCompatActivity{
 
         accelerometer.unregister();
         gyroscope.unregister();
-        rotation.unregister();
     }
 
     public void checkPermission(String permission, int requestCode)  {
@@ -195,14 +174,10 @@ public class MainActivity extends AppCompatActivity{
         }
     }
 
-    private boolean writeToFile(String dir,String filename, List<String> content){
+    private boolean writeToFile(String filename, List<String> content){
         try {
             if(!content.isEmpty()){
-                File d = new File(writeDir,dir);
-                if (!d.exists()){
-                    d.mkdirs();
-                }
-                File f = new File(d,filename);
+                File f = new File(writeDir,filename);
                 FileWriter writer = new FileWriter(f);
                 for (String line:content) {
                     writer.append(line + "\r\n");
@@ -235,15 +210,5 @@ public class MainActivity extends AppCompatActivity{
             e.printStackTrace();
         }
         return "not_found";
-    }
-
-    public List<String> postProcessFile(List<String> input,long stopTime){
-        List<String> r = new ArrayList<String>();
-        for (String line:input) {
-            if(Long.parseLong(line.split(",")[0]) < stopTime- IGNORE_TIME && Long.parseLong(line.split(",")[0]) > currentSessionStartTime + IGNORE_TIME){
-                r.add(line);
-            }
-        }
-        return r;
     }
 }
