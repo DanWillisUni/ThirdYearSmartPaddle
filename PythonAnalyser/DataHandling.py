@@ -6,11 +6,8 @@ from sklearn.model_selection import StratifiedKFold
 from sklearn.tree import DecisionTreeClassifier
 import itertools
 from sklearn.feature_selection import RFE
-from scipy.signal import find_peaks
 
 import AppSettings
-
-#def smooth_raw(session):
 
 
 def feature_extraction(session):
@@ -38,6 +35,16 @@ def feature_extraction(session):
 		gyro_mean = np.mean(gyro_mag)  # get the mean
 		gyro_var = np.var(gyro_mag)  # get the varience
 
+		'''gyro_xy_vals = np.delete(gyro_vals,2,1)  # delete z value
+		gyro_xy_mag = np.sqrt((gyro_xy_vals[:, 0] ** 2).reshape(-1, 1) + (gyro_xy_vals[:, 1] ** 2).reshape(-1, 1))  # get xy combined
+		gyro_xy_mean = np.mean(gyro_xy_mag)  # get xy mean
+		gyro_xy_var = np.var(gyro_xy_mag)  # get xy varience
+
+		gyro_z_mag = np.delete(gyro_vals, 0, 1)  # delete x value
+		gyro_z_mag = np.delete(gyro_z_mag, 0, 1)  # delete y value
+		gyro_z_mean = np.mean(gyro_z_mag)  # get z mean
+		gyro_z_var = np.var(gyro_z_mag)  # get z varience'''
+
 		rota_seg = session.rotas_raw[i:i + segment_size, :]  # get the rotation vector segment
 		rota_vals = np.delete(rota_seg, 0, 1)  # delete the timestamps
 		rota_vals = np.delete(rota_vals, 3, 1)  # delete the third value
@@ -59,7 +66,8 @@ def feature_extraction(session):
 			rota_z_sum_dif += abs(rota_z_vals[j] - rota_z_vals[j + 1])  # get the difference between the z
 			gyro_mag_sum_dif += abs(gyro_mag[j] - gyro_mag[j+1])
 
-		feature = [accel_mag_mean, accel_mag_var, gyro_mean, gyro_var, rota_xy_mean, rota_xy_var,rota_z_mean,rota_z_var,rota_z_sum_dif[0],gyro_mag_sum_dif[0]]  # set all features in one array
+		#feature = [accel_mag_mean, accel_mag_var, gyro_mean, gyro_var,gyro_xy_mean,gyro_xy_var,gyro_z_mean,gyro_z_var, rota_xy_mean, rota_xy_var,rota_z_mean,rota_z_var,rota_z_sum_dif[0],gyro_mag_sum_dif[0]]  # set all features in one array
+		feature = [accel_mag_mean,accel_mag_var, gyro_mean, gyro_var, rota_xy_mean, rota_xy_var, rota_z_mean, rota_z_var, rota_z_sum_dif[0],gyro_mag_sum_dif[0]]
 		##add feature to features
 		if features is None:
 			features = np.array([feature])
@@ -72,6 +80,47 @@ def feature_extraction(session):
 			labels = np.append(labels, [session.label], axis=0)
 
 	return features, labels
+
+
+def plot_features(features,labels,i):
+	plt.subplot(2, 1, 1)
+	plt.plot(features[:, i])
+	plt.xticks(fontsize=8)
+	plt.yticks(fontsize=8)
+	if i == 0 or i == 1:  # setting titles and graph units etc
+		plt.ylabel('m/s^2', fontsize=8)
+		if i == 0:
+			plt.gca().set_title('Mean acceleration', fontsize=8)
+		else:
+			plt.gca().set_title('Var acceleration', fontsize=8)
+	if i == 2 or i == 3:
+		plt.ylabel('rad/s', fontsize=8)
+		if i == 2:
+			plt.gca().set_title('Mean Gyroscope', fontsize=8)
+		else:
+			plt.gca().set_title('Var Gyroscope', fontsize=8)
+	if i == 4 or i == 5 or i == 6 or i == 7:
+		# plt.ylabel('rad/s', fontsize=8)
+		if i == 4:
+			plt.gca().set_title('Mean Rotation Vector XY', fontsize=8)
+		elif i == 5:
+			plt.gca().set_title('Var Rotation Vector XY', fontsize=8)
+		elif i == 6:
+			plt.gca().set_title('Mean Rotation Vector Z', fontsize=8)
+		else:
+			plt.gca().set_title('Var Rotation Vector Z', fontsize=8)
+
+	plt.subplot(2, 1, 2)
+	plt.plot(labels)
+	plt.xticks(fontsize=8)
+	plt.yticks(fontsize=8)
+	plt.gca().set_title('Activity', fontsize=8)
+	plt.grid(True)
+	if not os.path.exists(AppSettings.get_image_dir() + "Features/"):  # if directories dont exist
+		os.makedirs(AppSettings.get_image_dir() + "Features/")  # create directories
+	plt.savefig(AppSettings.get_image_dir() + "Features/Feature Data" + str(i + 1) + ".png")  # save
+	print("Save Feature " + str(i + 1) + " Data")
+	plt.close()
 
 
 def plot_extracted_features(features, prefix, i):
@@ -116,7 +165,7 @@ def plot_extracted_features(features, prefix, i):
 	plt.close()
 
 
-def five_fold_cross_validation(features, labels):
+def cross_validation(features, labels):
 	'''
 	Create and train model
 
@@ -127,6 +176,9 @@ def five_fold_cross_validation(features, labels):
 	'''
 	true_labels = list()
 	predicted_labels = list()
+	for i in range(0, np.size(features, axis=1)):  # for each feature
+		plot_features(features, labels, i)  # plot the feature
+
 	for train_index, test_index in StratifiedKFold(n_splits=5).split(features, labels):  # split features and labels for train and test
 		X_train = features[train_index, :]
 		Y_train = labels[train_index]
@@ -139,12 +191,12 @@ def five_fold_cross_validation(features, labels):
 
 		predicted_labels += predicted_label.flatten().tolist()  # set prediction labels
 		true_labels += Y_test.flatten().tolist()  # set true labels
-	confusion_matrix = np.zeros((len(AppSettings.paddle_types), len(AppSettings.paddle_types)))  # construct confusion matrix
+	the_confusion_matrix = np.zeros((len(AppSettings.paddle_types), len(AppSettings.paddle_types)))  # construct confusion matrix
 
 	for i in range(len(true_labels)):  # for each peice of data
-		confusion_matrix[AppSettings.paddle_types[true_labels[i]], AppSettings.paddle_types[predicted_labels[i]]] += 1  # populate confusion matrix
+		the_confusion_matrix[AppSettings.paddle_types[true_labels[i]], AppSettings.paddle_types[predicted_labels[i]]] += 1  # populate confusion matrix
 
-	plot_confusion_matrix(confusion_matrix, AppSettings.paddle_types.keys(), normalize=True)  # plot confusion matrix
+	plot_confusion_matrix(the_confusion_matrix, AppSettings.paddle_types.keys(), normalize=True)  # plot confusion matrix
 	plt.savefig(AppSettings.get_image_dir() + "Confusion_Matrix.png")  # save confusion matrix plot
 	print("Save Confusion Matrix")
 	plt.close()
@@ -153,7 +205,7 @@ def five_fold_cross_validation(features, labels):
 	selector.fit(X_train, Y_train)  # fit
 	print(selector.ranking_)  # print ranking
 
-	return confusion_matrix, clf
+	return the_confusion_matrix, clf
 
 
 def plot_confusion_matrix(confusion_matrix, classes, normalize=False, title='Confusion Matrix', cmap=plt.cm.Blues):

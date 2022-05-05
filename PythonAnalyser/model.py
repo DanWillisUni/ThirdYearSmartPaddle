@@ -32,6 +32,7 @@ def get_model():
                 labels = np.array(current_labels)
             else:
                 labels = np.append(labels, current_labels, axis=0)
+
         for i in range(0, np.size(dir_features, axis=1)):  # for each feature
             dh.plot_extracted_features(dir_features, dir_name + "/", i)  # plot the feature of the dir data
         # add the dir features to the whole features array
@@ -41,11 +42,11 @@ def get_model():
             features = np.append(features, dir_features,axis=0)
 
     labels = labels.reshape([-1])  # reshape labels
-    confusion_matrix, clf = dh.five_fold_cross_validation(features, labels)  # get and build model
+    confusion_matrix, clf = dh.cross_validation(features, labels)  # get and build model
 
+    print("Stroke Type,Precision,Recall")
     for i in range(0,len(dir_names)):  # for each directory
-        print("Precision " + dir_names[i] + ": " + str(calculate_precision(confusion_matrix, i)))  # calculate precision
-        print("Recall " + dir_names[i] + ": " + str(calculate_recall(confusion_matrix, i)))  # calcualte recall
+        print(dir_names[i] + ", " + str(calculate_precision(confusion_matrix, i)) + ", " + str(calculate_recall(confusion_matrix, i)))  # calculate precision and recall
     print("Accuracy: " + str(calculate_accuracy(confusion_matrix)))  # calculate accuracy
 
     return clf  # return model
