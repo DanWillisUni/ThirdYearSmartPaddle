@@ -7,7 +7,9 @@ import androidx.core.content.ContextCompat;
 import android.Manifest;
 import android.annotation.SuppressLint;
 import android.content.Context;
+import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Environment;
 import android.telephony.TelephonyManager;
@@ -16,6 +18,7 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -84,9 +87,8 @@ public class MainActivity extends AppCompatActivity{
         });
 
         //setup button
-        final Button button = findViewById(R.id.button);
-        button.setText("Start");
-        final TextView t = findViewById(R.id.current_activity);
+        final ImageButton button = findViewById(R.id.StopStartButton);
+        button.setBackgroundColor(Color.GREEN);
         button.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
                 if(isInSession){
@@ -94,8 +96,8 @@ public class MainActivity extends AppCompatActivity{
                     onPause();
                     isInSession = false;
                     System.out.println("Stop: " + System.currentTimeMillis());
-                    button.setText("Start");
-
+                    button.setImageResource(R.drawable.ic_baseline_play_arrow_24);
+                    button.setBackgroundColor(Color.GREEN);
                     //post processing the files
                     List<String> accelToPublish = new ArrayList<String>();
                     for (String line:currentAccel) {
@@ -111,20 +113,29 @@ public class MainActivity extends AppCompatActivity{
                     }
                     writeToFile(fileName + "_accel.txt",accelToPublish);
                     writeToFile(fileName + "_gyro.txt",gyroToPublish);
+                    Toast.makeText(MainActivity.this, fileName, Toast.LENGTH_SHORT).show();
                     fileName = "";
                 }
                 else{
                     currentSessionStartTime = System.currentTimeMillis();
                     System.out.println("Start: " + currentSessionStartTime);
-                    button.setText("Stop");
                     fileName = MainActivity.this.IMEI + "_" + currentSessionStartTime + "_" + currentSessionName;
                     //checkPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE,STORAGE_PERMISSION_CODE);
                     currentAccel = new ArrayList<String>();
                     currentGyro = new ArrayList<String>();
-                    t.setText(fileName);
                     isInSession = true;
+                    button.setImageResource(R.drawable.ic_baseline_stop_24);
+                    button.setBackgroundColor(Color.RED);
                     onResume();
                 }
+            }
+        });
+
+        ImageButton btn = (ImageButton) findViewById(R.id.ToInfoButton);
+        btn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startActivity(new Intent(MainActivity.this, DisplayFeedback.class));
             }
         });
 

@@ -1,31 +1,15 @@
 package com.example.kayakdatacollection;
 
-import android.Manifest;
 import android.content.Intent;
-import android.graphics.Color;
-import android.os.Build;
 import android.os.Bundle;
-import android.os.Environment;
-import android.view.View;
-import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
-import android.widget.Button;
-import android.widget.ImageButton;
 import android.widget.ImageView;
-import android.widget.Spinner;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-import java.io.File;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-
 public class DisplayFeedback extends AppCompatActivity {
-    int[] feedbackArray = new int[] {0,10,21,20,0};
-    String[] feedbackImageNames = new String[] {"OverReaching","NotUpright","StrokeTooWide","BladeAngleWrong"};
+    int[] feedbackArray = new int[] {36, 0, 1, 21, 0};
+    String[] feedbackNames = new String[] {"Perfect","Over Reaching","Not Upright","Stroke Too Wide","Blade Angle"};
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -44,7 +28,7 @@ public class DisplayFeedback extends AppCompatActivity {
         correction.setImageResource(correctionImage);
 
         TextView textView = findViewById(R.id.textView);
-        textView.setText(getRankUpSentance(perfectPercent) + biggestError);
+        textView.setText(getRankUpSentance(perfectPercent) + biggestError + "\n\n" + getExplination(biggestError));
     }
 
     private double calculatePerfectPercent(){
@@ -52,29 +36,29 @@ public class DisplayFeedback extends AppCompatActivity {
         for (int i:feedbackArray) {
             total+= i;
         }
-        return (double)(feedbackArray[0]/total);
+        return 100*((double)feedbackArray[0]/total);
     }
 
     private int getImageName(double perfectPercent){
         if(perfectPercent < 20){
-            return R.drawable.Tadpole;
+            return R.drawable.tadpole;
         } else if(perfectPercent < 40){
-            return R.drawable.Salmon;
+            return R.drawable.salmon;
         } else if(perfectPercent < 60){
-            return R.drawable.Squid;
+            return R.drawable.squid;
         } else if(perfectPercent < 80){
-            return R.drawable.Dolphin;
+            return R.drawable.dolphin;
         }
-        return R.drawable.Shark;
+        return R.drawable.shark;
     }
 
     private String getRankUpSentance(double perfectPercent){
         if(perfectPercent < 20){
             return "Like a Tadpole your journeys only just beginning \n" +
-                    "To become a salmon focus on ";
+                    "To become a Salmon focus on ";
         } else if(perfectPercent < 40){
-            return "Well done!  You are a salmon! \n" +
-                    "To become a squid, focus on ";
+            return "Well done!  You are a Salmon! \n" +
+                    "To become a Squid, focus on ";
         } else if(perfectPercent < 60){
             return "Congratulations, you are a Salmon!\n" +
                     " To become a Dolphin, focus on ";
@@ -82,7 +66,7 @@ public class DisplayFeedback extends AppCompatActivity {
             return "Great Job, you are a Dolphin! \n" +
                     "To become a Shark focus on ";
         }
-        String r = "Fantastic! You are a shark in the water!";
+        String r = "Fantastic! You are a Shark in the water!";
         if (perfectPercent < 100){
             r += "\nTo improve even more focus on ";
         }
@@ -98,19 +82,32 @@ public class DisplayFeedback extends AppCompatActivity {
                 maxI = i;
             }
         }
-        return feedbackImageNames[maxI-1];
+        return feedbackNames[maxI];
     }
 
     private int getCorrectionImage(String errorName){
-        if (errorName == "OverReaching"){
-            return R.drawable.OverReach;
-        } else if (errorName == "NotUpright"){
-            return R.drawable.Salmon;//change
-        } else if (errorName == "StrokeTooWide"){
-            return R.drawable.TooWide;
-        } else if (errorName == "BladeAngleWrong"){
-            return R.drawable.BladeAngle;
+        if (errorName == feedbackNames[1]){
+            return R.drawable.overreach;
+        } else if (errorName == feedbackNames[2]){
+            return R.drawable.notupright;
+        } else if (errorName == feedbackNames[3]){
+            return R.drawable.toowide;
+        } else if (errorName == feedbackNames[4]){
+            return R.drawable.bladeangle;
         }
-        return R.drawable.Perfect;
+        return R.drawable.perfect;
+    }
+
+    private String getExplination(String errorName){
+        if (errorName == feedbackNames[1]){
+            return "You are over reaching and leaning too far forward, try leaning back a bit and not hunching over.";
+        } else if (errorName == feedbackNames[2]){
+            return "You are leaning too far back in the seat, try sitting more upright and engaging your core";
+        } else if (errorName == feedbackNames[3]){
+            return "Your paddle isnt going into the water vertical enough, try holding your hands slightly further apart and really make sure the paddle is upright when going into the water";
+        } else if (errorName == feedbackNames[4]){
+            return "Your blade angle when taking stokes is wrong you are slicing through the water, try rotating the shaft a little but in your hands.";
+        }
+        return "";
     }
 }
