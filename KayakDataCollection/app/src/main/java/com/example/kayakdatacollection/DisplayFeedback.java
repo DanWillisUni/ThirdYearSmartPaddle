@@ -8,7 +8,7 @@ import android.widget.TextView;
 import androidx.appcompat.app.AppCompatActivity;
 
 public class DisplayFeedback extends AppCompatActivity {
-    int[] feedbackArray = new int[] {0,10,21,20,0};
+    int[] feedbackArray = new int[] {36, 0, 1, 21, 0};
     String[] feedbackNames = new String[] {"Perfect","Over Reaching","Not Upright","Stroke Too Wide","Blade Angle"};
 
     @Override
@@ -36,7 +36,7 @@ public class DisplayFeedback extends AppCompatActivity {
         for (int i:feedbackArray) {
             total+= i;
         }
-        return (double)(feedbackArray[0]/total);
+        return 100*((double)feedbackArray[0]/total);
     }
 
     private int getImageName(double perfectPercent){
