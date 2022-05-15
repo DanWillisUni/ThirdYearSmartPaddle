@@ -33,6 +33,7 @@ import java.util.List;
 public class MainActivity extends AppCompatActivity{
     private Accelerometer accelerometer;
     private Gyroscope gyroscope;
+    private Rotation rotationVector;
     private boolean isInSession = false;
 
     private String currentSessionName = "";
@@ -41,6 +42,7 @@ public class MainActivity extends AppCompatActivity{
     private String IMEI;
     private List<String> currentAccel;
     private List<String> currentGyro;
+    private List<String> currentRota;
     private long currentSessionStartTime;
 
     private static final int STORAGE_PERMISSION_CODE = 100;
@@ -111,18 +113,25 @@ public class MainActivity extends AppCompatActivity{
                             gyroToPublish.add(line);
                         }
                     }
+                    List<String> rotaToPublish = new ArrayList<String>();
+                    for (String line:currentRota) {
+                        if(Long.parseLong(line.split(",")[0]) < stopTime- IGNORE_TIME && Long.parseLong(line.split(",")[0]) > currentSessionStartTime + IGNORE_TIME){
+                            rotaToPublish.add(line);
+                        }
+                    }
                     writeToFile(fileName + "_accel.txt",accelToPublish);
                     writeToFile(fileName + "_gyro.txt",gyroToPublish);
+                    writeToFile(fileName + "_rota.txt",rotaToPublish);
                     Toast.makeText(MainActivity.this, fileName, Toast.LENGTH_SHORT).show();
                     fileName = "";
-                }
-                else{
+                }else{
                     currentSessionStartTime = System.currentTimeMillis();
                     System.out.println("Start: " + currentSessionStartTime);
                     fileName = MainActivity.this.IMEI + "_" + currentSessionStartTime + "_" + currentSessionName;
                     //checkPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE,STORAGE_PERMISSION_CODE);
                     currentAccel = new ArrayList<String>();
                     currentGyro = new ArrayList<String>();
+                    currentRota = new ArrayList<String>();
                     isInSession = true;
                     button.setImageResource(R.drawable.ic_baseline_stop_24);
                     button.setBackgroundColor(Color.RED);
@@ -142,6 +151,7 @@ public class MainActivity extends AppCompatActivity{
         //setup sensors
         accelerometer = new Accelerometer(this);
         gyroscope = new Gyroscope(this);
+        rotationVector = new Rotation(this);
         accelerometer.setListener(new Accelerometer.Listener() {
             @Override
             public void onTranslation(float tx, float ty, float tz) {
@@ -160,6 +170,15 @@ public class MainActivity extends AppCompatActivity{
                 }
             }
         });
+        rotationVector.setListener(new Rotation.Listener() {
+            @Override
+            public void onRotation(float tx,float ty,float tz,float v3,float v4) {
+                if(isInSession && fileName != ""){
+                    String line = System.currentTimeMillis() + "," + df.format(tx) + "," + df.format(ty) + "," + df.format(tz)+ "," + df.format(v3)+ "," + df.format(v4);
+                    currentRota.add(line);
+                }
+            }
+        });
     }
 
     @Override
@@ -168,6 +187,7 @@ public class MainActivity extends AppCompatActivity{
 
         accelerometer.register();
         gyroscope.register();
+        rotationVector.register();
     }
     @Override
     protected void onPause() {
@@ -175,6 +195,7 @@ public class MainActivity extends AppCompatActivity{
 
         accelerometer.unregister();
         gyroscope.unregister();
+        rotationVector.unregister();
     }
 
     public void checkPermission(String permission, int requestCode)  {
