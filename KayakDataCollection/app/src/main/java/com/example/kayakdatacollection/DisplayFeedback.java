@@ -7,8 +7,24 @@ import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import java.util.HashMap;
+import java.util.Map;
+
 public class DisplayFeedback extends AppCompatActivity {
-    int[] feedbackArray = new int[] {36, 0, 1, 21, 0};
+    Map<String, int[]> map = new HashMap<String, int[]>() {{
+        put("A", new int[]{1, 0, 0, 63, 0});
+        put("B", new int[]{0, 2, 1, 61, 0});
+        put("C", new int[]{11, 2, 10, 59, 0});
+        put("D", new int[]{0, 1, 1, 56, 0});
+        put("E", new int[]{2, 0, 0, 56, 0});
+        put("F", new int[]{0, 0, 3, 55, 0});
+        put("G", new int[]{0, 0, 34, 26, 0});
+        put("H", new int[]{0, 0, 7, 49, 0});
+        put("A2", new int[]{39, 1, 0, 4, 0});
+        put("B2", new int[]{36, 0, 4, 18, 0});
+        put("C2", new int[]{44, 0, 2, 10, 0});
+    }};
+    int[] feedbackArray = map.get("B");
     String[] feedbackNames = new String[] {"Perfect","Over Reaching","Not Upright","Stroke Too Wide","Blade Angle"};
 
     @Override
